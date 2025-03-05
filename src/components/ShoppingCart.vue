@@ -5,7 +5,9 @@
         <div class="cart-container">
             <CartList 
                 class="cart-list" 
-                :cartItems="shoppingCartItems">
+                :cartItems="shoppingCartItems"
+                @item-remove="removeItem($event)"
+                @quantity-update="updateQuantity($event)">
             </CartList>
             <OrderSummary 
                 class="order-summary" 
@@ -19,7 +21,7 @@
 import CartTitle from '@/components/CartTitle.vue'
 import CartList from '@/components/CartList.vue'
 import OrderSummary from '@/components/OrderSummary.vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 let username = ref('Harry')
 let shoppingCartItems = ref([
@@ -64,6 +66,33 @@ let shoppingCartItems = ref([
         image: 'src/assets/img/Nimbus2000.jpg'
     }
 ])
+
+function removeItem(id) {
+    let index = shoppingCartItems.value.findIndex(item => item.id === id)
+    shoppingCartItems.value.splice(index, 1)
+}
+
+function updateQuantity(val) {
+    const {id, newQuantity} = val
+    shoppingCartItems.value.some((item) => {
+        if (item.id == id) {
+            item.quantity = parseInt(newQuantity)
+            return true
+        }
+    })
+}
+
+//automatically save to localStorage whenever any part of shoppingCartItems changes
+watch(
+    shoppingCartItems,
+    () => {
+        localStorage.setItem(
+            'hogwartsShoppingCart',
+            JSON.stringify(shoppingCartItems.value)
+        )
+    },
+    { deep: true }
+)
 </script>
 
 <style scoped>
